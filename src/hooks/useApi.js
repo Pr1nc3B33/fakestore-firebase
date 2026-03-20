@@ -1,27 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
 
-const BASE = 'https://fakestoreapi.com';
+export const useCategories = () => {
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-const fetchJson = async (url) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "products"));
+        const all = snapshot.docs.map((doc) => doc.data().category);
+        const unique = [...new Set(all)];
+        setData(unique);
+      } catch {
+        setData([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetch();
+  }, []);
+
+  return { data, isLoading };
 };
-
-export const useCategories = () =>
-  useQuery({
-    queryKey: ['categories'],
-    queryFn: () => fetchJson(`${BASE}/products/categories`),
-    staleTime: Infinity, // Categories never change during a session
-  });
-
-export const useProducts = (category) =>
-  useQuery({
-    queryKey: ['products', category],
-    queryFn: () =>
-      category && category !== 'all'
-        ? fetchJson(`${BASE}/products/category/${encodeURIComponent(category)}`)
-        : fetchJson(`${BASE}/products`),
-    staleTime: 5 * 60 * 1000,
-    placeholderData: (previousData) => previousData, // Keep previous results visible while new ones load
-  });

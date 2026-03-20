@@ -1,5 +1,4 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import {
   selectCartItems,
   selectCartTotal,
@@ -9,10 +8,12 @@ import {
   updateQuantity,
   checkout,
   dismissCheckoutSuccess,
-} from '../store/cartStore';
-import './Cart.css';
+} from "../store/cartStore";
+import { selectUser } from "../store/authStore";
+import { useOrders } from "../hooks/useOrders";
+import "./Cart.css";
 
-const PLACEHOLDER = 'https://via.placeholder.com/80x80?text=No+Image';
+const PLACEHOLDER = "https://via.placeholder.com/80x80?text=No+Image";
 
 export default function Cart() {
   const dispatch = useDispatch();
@@ -20,15 +21,30 @@ export default function Cart() {
   const total = useSelector(selectCartTotal);
   const count = useSelector(selectCartCount);
   const checkoutSuccess = useSelector(selectCheckoutSuccess);
+  const user = useSelector(selectUser);
+  const { placeOrder } = useOrders(user?.uid ?? null);
 
   const isEmpty = items.length === 0;
+
+  const handleCheckout = async () => {
+    if (user) {
+      const orderProducts = items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        image: item.image,
+        count: item.count,
+      }));
+      await placeOrder(orderProducts, total);
+    }
+    dispatch(checkout());
+  };
 
   return (
     <main className="cart-page">
       <div className="cart-container">
         <h1 className="cart-title">Shopping Cart</h1>
 
-        {/* Checkout success banner — shown after checkout regardless of empty state */}
         {checkoutSuccess && (
           <div className="checkout-banner" role="status">
             <span className="checkout-banner__icon">🎉</span>
@@ -46,7 +62,6 @@ export default function Cart() {
           </div>
         )}
 
-        {/* Empty state — only shown when no checkout success is displayed */}
         {isEmpty && !checkoutSuccess && (
           <div className="cart-empty">
             <span className="cart-empty__icon" aria-hidden="true">🛍️</span>
@@ -55,7 +70,6 @@ export default function Cart() {
           </div>
         )}
 
-        {/* Cart items + summary — shown whenever there are items */}
         {!isEmpty && (
           <>
             <div className="cart-items" role="list">
@@ -119,7 +133,7 @@ export default function Cart() {
                 <span>Total price</span>
                 <strong>${total.toFixed(2)}</strong>
               </div>
-              <button className="btn-checkout" onClick={() => dispatch(checkout())}>
+              <button className="btn-checkout" onClick={handleCheckout}>
                 Checkout — ${total.toFixed(2)}
               </button>
             </div>

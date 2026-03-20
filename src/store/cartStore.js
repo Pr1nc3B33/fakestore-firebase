@@ -1,4 +1,5 @@
 import { configureStore, createSlice, current } from '@reduxjs/toolkit';
+import authReducer from "./authStore";
 
 const SESSION_KEY = 'fakestore_cart';
 
@@ -87,8 +88,12 @@ export const selectCheckoutSuccess = (state) => state.cart.checkoutSuccess;
 
 //  Store
 
+
 const appStore = configureStore({
-  reducer: { cart: cartSlice.reducer },
+  reducer: {
+    cart: cartSlice.reducer,
+    auth: authReducer,
+  },
 });
 
 export default appStore;

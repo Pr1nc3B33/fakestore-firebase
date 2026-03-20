@@ -4,6 +4,7 @@
   z-index: 100;
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -88,4 +89,14 @@
   0% { transform: scale(0.5); }
   70% { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+
+.nav-link--logout {
+  color: #e74c3c;
+}
+
+.nav-link--logout:hover {
+  background: #fdf0ef;
+  color: #e74c3c;
 }

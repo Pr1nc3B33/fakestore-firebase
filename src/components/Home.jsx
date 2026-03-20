@@ -1,22 +1,13 @@
-import React, { useState } from 'react';
-import { useCategories, useProducts } from '../hooks/useApi';
-import ProductCard from './ProductCard';
-import './Home.css';
+import { useState } from "react";
+import { useCategories } from "../hooks/useApi";
+import { useProducts } from "../hooks/useProducts";
+import ProductCard from "./ProductCard";
+import "./Home.css";
 
 export default function Home() {
-  const [category, setCategory] = useState('all');
-
+  const [category, setCategory] = useState("all");
   const { data: categories, isLoading: catsLoading } = useCategories();
-  const {
-    data: products,
-    isLoading: prodsLoading,
-    isFetching,
-    isError,
-    refetch,
-  } = useProducts(category);
-
-  // isFetching is true during category transitions (placeholderData keeps old results visible)
-  const isTransitioning = isFetching && !prodsLoading;
+  const { products, loading: prodsLoading, error, refetch } = useProducts(category);
 
   return (
     <main className="home">
@@ -47,16 +38,14 @@ export default function Home() {
         </div>
 
         <div className="home__toolbar-right">
-          {isTransitioning && <span className="loading-indicator">Loading…</span>}
-          {!prodsLoading && !isError && (
+          {!prodsLoading && !error && (
             <p className="home__count">
-              {products?.length ?? 0} product{products?.length !== 1 ? 's' : ''}
+              {products?.length ?? 0} product{products?.length !== 1 ? "s" : ""}
             </p>
           )}
         </div>
       </div>
 
-      {/* Initial skeleton load */}
       {prodsLoading && (
         <div className="loading-grid">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -65,8 +54,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Error with retry */}
-      {isError && (
+      {error && (
         <div className="error-msg">
           <span>⚠️</span>
           <span>Failed to load products.</span>
@@ -76,9 +64,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Product grid — stays visible during category transitions */}
-      {!prodsLoading && !isError && (
-        <div className={`product-grid ${isTransitioning ? 'product-grid--fading' : ''}`}>
+      {!prodsLoading && !error && (
+        <div className="product-grid">
           {products?.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
